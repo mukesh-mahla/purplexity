@@ -1,11 +1,12 @@
 import { parseFOllowUpStreamObject, parseStreamObject } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { data, useParams } from "react-router-dom";
 import { SparklesIcon, } from "lucide-react";
 import { MessageBubble } from "@/ui/component/message";
 import { Source } from "@/ui/component/source";
 import { InputBox } from "@/ui/component/inputBox";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 
 export type Message = {
     role?: string | undefined;
@@ -24,72 +25,86 @@ export default function Conversation() {
     const [isStreaming, setIsStreaming] = useState(true);
 
     useEffect(() => {
-        async function fetchData() {
-            await parseStreamObject(
-                conversationId!,
-                (data) => {
-                    if (data.title) {
-                        setResource((prev) => [
-                            ...prev,
-                            {
-                                title: data.title,
-                                link: data.link,
-                            },
-                        ]);
-                    } else if (data.role === "ASSISTANT") {
 
-                        setMessages((prev) => {
+        async function getData() {
+            const response = await axios.get(`http://localhost:4000/api/conversation/${conversationId}`)
+            const data = response.data
 
-                            // if last message already assistant
-                            // append content to same bubble
+            const lastMessage = data.messages?.[data.messages.length - 1]!
+            const lastMessageByAssistant = lastMessage?.sender === "ASSISTANT";
 
-                            if (
-                                prev.length > 0 &&
-                                prev[prev.length - 1]!.role === "ASSISTANT"
-                            ) {
-
-                                const updated: Message[] = [...prev];
-
-                                updated[updated.length - 1] = {
-                                    ...updated[updated.length - 1],
-                                    content:
-                                        updated[updated.length - 1]!.content +
-                                        data.content,
-                                };
-
-                                return updated;
-                            }
-
-                            // otherwise create new assistant bubble
-
-                            return [
+            if (!lastMessageByAssistant) {
+                await parseStreamObject(
+                    conversationId!,
+                    (data) => {
+                        if (data.title) {
+                            setResource((prev) => [
                                 ...prev,
                                 {
-                                    role: "ASSISTANT",
-                                    content: data.content,
+                                    title: data.title,
+                                    link: data.link,
                                 },
-                            ];
-                        });
-                    } else if (
-                        data.role === "USER"
-                    ) {
-                        setMessages((prev) => [
-                            ...prev,
-                            {
-                                role: data.role,
-                                content: data.content
-                            }
-                        ]);
-                    } else if (
-                        data.type === "done"
-                    ) {
-                        setIsStreaming(false);
-                    }
-                }
-            );
-        }
+                            ]);
+                        } else if (data.role === "ASSISTANT") {
 
-        fetchData();
+                            setMessages((prev) => {
+
+                                // if last message already assistant
+                                // append content to same bubble
+                                if (
+                                    prev.length > 0 &&
+                                    prev[prev.length - 1]!.role === "ASSISTANT"
+                                ) {
+
+                                    const updated: Message[] = [...prev];
+
+                                    updated[updated.length - 1] = {
+                                        ...updated[updated.length - 1],
+                                        content:
+                                            updated[updated.length - 1]!.content +
+                                            data.content,
+                                    };
+
+                                    return updated;
+                                }
+                                // otherwise create new assistant bubble
+                                return [
+                                    ...prev,
+                                    {
+                                        role: "ASSISTANT",
+                                        content: data.content,
+                                    },
+                                ];
+                            });
+                        } else if (
+                            data.role === "USER"
+                        ) {
+                            setMessages((prev) => [
+                                ...prev,
+                                {
+                                    role: data.role,
+                                    content: data.content
+                                }
+                            ]);
+                        } else if (
+                            data.type === "done"
+                        ) {
+                            setIsStreaming(false);
+                        }
+                    }
+                );
+            }
+
+            if(lastMessageByAssistant){
+                const formattedMessages = data.messages.map((msg: any) => ({
+                role: msg.sender,
+                content: msg.content,
+            }))
+            setMessages(formattedMessages)
+            }
+           
+        }
+        getData()
     }, [conversationId]);
 
     const HandleFolloup = async (question: string) => {

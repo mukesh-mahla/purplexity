@@ -166,3 +166,21 @@ ${query}
   );
   res.end();
 });
+
+router.get("/api/conversation/:id",async(req,res)=>{
+  const id = req.params.id;
+  const conversation = await prisma.conversation.findFirst({
+    where:{
+      id:id
+    },
+    include:{
+      messages:true
+    }
+  })
+
+  if(!conversation)
+  {
+    return res.status(404).json({error:"Conversation not found"});
+  }
+ res.json(conversation)
+});
