@@ -89,18 +89,29 @@ router.post("/api/:conversationId", async (req, res) => {
     res.write(`data: ${JSON.stringify({role:"ASSISTANT",content:textPart})}\n\n`);
   }
 
-
-
    sources.forEach((source) =>
     res.write(`data: ${JSON.stringify({title:source.title, link:source.link})}\n\n`),
   );
-   await prisma.message.create({
+  
+  
+
+
+  const AssistantMessage = await prisma.message.create({
     data: {
       conversationId: conversationId,
       sender: "ASSISTANT",
-      content: finalText,
+      content: finalText
     },
   });
+
+  await prisma.sources.createMany({
+    data:sources.map((source)=>({
+      messageId:AssistantMessage.id,
+      title:source.title,
+      link:source.link
+    }))
+  })
+
 
   res.write(
   `data: ${JSON.stringify({
@@ -116,6 +127,7 @@ router.post("/api/conversation/followup", async (req, res) => {
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
+
 
   const PastChat = await prisma.message.findMany({
     where: { conversationId: req.body.conversationId,conversation: { userId: "clerk_user_id" }   },
@@ -164,6 +176,7 @@ ${query}
       type: "done",
     })}\n\n`
   );
+
   res.end();
 });
 
@@ -174,7 +187,12 @@ router.get("/api/conversation/:id",async(req,res)=>{
       id:id
     },
     include:{
-      messages:true
+      messages:{
+        include:{
+          sources:true
+        }
+      }
+      
     }
   })
 

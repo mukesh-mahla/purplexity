@@ -1,4 +1,4 @@
-import { parseFOllowUpStreamObject, parseStreamObject } from "@/lib/utils";
+import { handleStreamData, parseFOllowUpStreamObject, parseStreamObject } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { data, useParams } from "react-router-dom";
 import { SparklesIcon, } from "lucide-react";
@@ -22,7 +22,7 @@ export default function Conversation() {
     const [messages, setMessages] = useState<Message[]>([])
     const [resource, setResource] = useState<SourceType[]>([]);
 
-    const [isStreaming, setIsStreaming] = useState(true);
+    const [isStreaming, setIsStreaming] = useState(false);
 
     useEffect(() => {
 
@@ -34,64 +34,10 @@ export default function Conversation() {
             const lastMessageByAssistant = lastMessage?.sender === "ASSISTANT";
 
             if (!lastMessageByAssistant) {
+                setIsStreaming(true);
                 await parseStreamObject(
                     conversationId!,
-                    (data) => {
-                        if (data.title) {
-                            setResource((prev) => [
-                                ...prev,
-                                {
-                                    title: data.title,
-                                    link: data.link,
-                                },
-                            ]);
-                        } else if (data.role === "ASSISTANT") {
-
-                            setMessages((prev) => {
-
-                                // if last message already assistant
-                                // append content to same bubble
-                                if (
-                                    prev.length > 0 &&
-                                    prev[prev.length - 1]!.role === "ASSISTANT"
-                                ) {
-
-                                    const updated: Message[] = [...prev];
-
-                                    updated[updated.length - 1] = {
-                                        ...updated[updated.length - 1],
-                                        content:
-                                            updated[updated.length - 1]!.content +
-                                            data.content,
-                                    };
-
-                                    return updated;
-                                }
-                                // otherwise create new assistant bubble
-                                return [
-                                    ...prev,
-                                    {
-                                        role: "ASSISTANT",
-                                        content: data.content,
-                                    },
-                                ];
-                            });
-                        } else if (
-                            data.role === "USER"
-                        ) {
-                            setMessages((prev) => [
-                                ...prev,
-                                {
-                                    role: data.role,
-                                    content: data.content
-                                }
-                            ]);
-                        } else if (
-                            data.type === "done"
-                        ) {
-                            setIsStreaming(false);
-                        }
-                    }
+                    (data) => handleStreamData(data, setMessages, setResource, setIsStreaming)
                 );
             }
 
@@ -99,10 +45,21 @@ export default function Conversation() {
                 const formattedMessages = data.messages.map((msg: any) => ({
                 role: msg.sender,
                 content: msg.content,
+                followUp: msg.followUp
             }))
-            setMessages(formattedMessages)
+const firstAimessage = data.messages[1]
+            const LastMessageSources = firstAimessage.sources?.map((source: any) => ({
+                title: source.title,
+                link: source.link
+            })) || []
+
+            
+
+            setMessages((prev)=>[...prev, ...formattedMessages])
+            setResource((prev)=>[...prev, ...LastMessageSources])
+            
             }
-           
+            
         }
         getData()
     }, [conversationId]);

@@ -29,7 +29,7 @@ export const MessageBubble = ({
     if (message.role === "ASSISTANT") {
         // Robust split: Parse answer body and follow-up string boundaries safely
         const aiAnswer = message.content.split("<FollowUp>");
-        
+         
         // Clean out raw <Answer> or </Answer> formatting flags from the main response
         let mainText = aiAnswer[0] || "";
         mainText = mainText.replace(/<\/?Answer[^>]*>/g, "").replace(/<[^>]*$/g, "").trim();
@@ -39,7 +39,7 @@ export const MessageBubble = ({
             ? aiAnswer[1]
                   .replace(/<\/?FollowUp>/g, "") // remove tags
                   .split("<Answer>")[0]!        // Safety guard: drop leaked answer tails instantly
-                  .split("-")                   // split by list dashes
+                  .split(/\n-\s+/)                   // split by list dashes
                   .map((q) => q.trim())         // trim whitespaces
                   .filter((q) => q.length > 3)  // drop empty artifacts or single character tags
             : [];
@@ -54,7 +54,8 @@ export const MessageBubble = ({
 
                     {/* Main Text Output (Displays perfectly while streaming now) */}
                     <div className="mt-4 whitespace-pre-wrap text-[15px] leading-8 text-zinc-100">
-                        {mainText || (isStreaming && <span className="text-zinc-500 italic text-sm">Thinking...</span>)}
+                        {mainText }
+                        {/* || (isStreaming && <span className="text-zinc-500 italic text-sm">Thinking...</span>)} */}
                         {isStreaming && (
                             <span className="ml-1 inline-block h-5 w-[2px] animate-pulse bg-blue-400 align-middle" />
                         )}

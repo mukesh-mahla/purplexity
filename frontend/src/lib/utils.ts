@@ -1,3 +1,4 @@
+import type { Message, SourceType } from "@/pages/conversation";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -110,3 +111,60 @@ export const parseFOllowUpStreamObject = async (
     }
   }
 };
+
+export function handleStreamData(data: any, setMessages: React.Dispatch<React.SetStateAction<Message[]>>, setResource: React.Dispatch<React.SetStateAction<SourceType[]>>, setIsStreaming: React.Dispatch<React.SetStateAction<boolean>>) {
+                        if (data.title) {
+                            setResource((prev) => [
+                                ...prev,
+                                {
+                                    title: data.title,
+                                    link: data.link,
+                                },
+                            ]);
+                        } else if (data.role === "ASSISTANT") {
+
+                            setMessages((prev) => {
+
+                                // if last message already assistant
+                                // append content to same bubble
+                                if (
+                                    prev.length > 0 &&
+                                    prev[prev.length - 1]!.role === "ASSISTANT"
+                                ) {
+
+                                    const updated: Message[] = [...prev];
+
+                                    updated[updated.length - 1] = {
+                                        ...updated[updated.length - 1],
+                                        content:
+                                            updated[updated.length - 1]!.content +
+                                            data.content,
+                                    };
+
+                                    return updated;
+                                }
+                                // otherwise create new assistant bubble
+                                return [
+                                    ...prev,
+                                    {
+                                        role: "ASSISTANT",
+                                        content: data.content,
+                                    },
+                                ];
+                            });
+                        } else if (
+                            data.role === "USER"
+                        ) {
+                            setMessages((prev) => [
+                                ...prev,
+                                {
+                                    role: data.role,
+                                    content: data.content
+                                }
+                            ]);
+                        } else if (
+                            data.type === "done"
+                        ) {
+                            setIsStreaming(false);
+                        }
+                      }
