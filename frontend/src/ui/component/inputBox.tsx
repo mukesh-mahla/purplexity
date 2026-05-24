@@ -3,11 +3,11 @@ import { ArrowUpIcon, PaperclipIcon } from "lucide-react"
 
 interface InputBoxProps {
     value?: string;
-    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    ref?: React.RefObject<HTMLInputElement|null>;
     onSubmit?: () => void;
 }
 
-export const InputBox = ({ value, onChange, onSubmit }: InputBoxProps) => {
+export const InputBox = ({ value, ref, onSubmit }: InputBoxProps) => {
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter" && onSubmit) {
             e.preventDefault();
@@ -26,7 +26,7 @@ export const InputBox = ({ value, onChange, onSubmit }: InputBoxProps) => {
             <Input 
                 type="text" 
                 value={value}
-                onChange={onChange}
+                ref={ref}
                 onKeyDown={handleKeyDown}
                 className="h-9 w-full border-0 bg-transparent p-0 text-sm text-white placeholder:text-zinc-500 focus-visible:ring-0 focus-visible:ring-offset-0" 
                 placeholder="Ask a follow-up question..." 

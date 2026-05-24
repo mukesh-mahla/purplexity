@@ -70,6 +70,7 @@ router.post("/api/:conversationId", async (req, res) => {
   const sources = response.results.map((res) => ({
     title: res.title,
     link: res.url,
+    snippet:res.content
   }));
 
   res.write(`data: ${JSON.stringify({role:"USER",content:conversation.messages[0]!.content})}\n\n`)
@@ -108,7 +109,8 @@ router.post("/api/:conversationId", async (req, res) => {
     data:sources.map((source)=>({
       messageId:AssistantMessage.id,
       title:source.title,
-      link:source.link
+      link:source.link,
+      content:source.snippet
     }))
   })
 
@@ -130,7 +132,11 @@ router.post("/api/conversation/followup", async (req, res) => {
 
 
   const PastChat = await prisma.message.findMany({
-    where: { conversationId: req.body.conversationId,conversation: { userId: "clerk_user_id" }   },
+    where: { conversationId: req.body.conversationId,
+      
+      
+      conversation: { userId: "clerk_user_id" }   },
+      include:{sources:true},
     orderBy: { createdAt: "asc" },
   });
 
@@ -142,19 +148,32 @@ router.post("/api/conversation/followup", async (req, res) => {
     },
   });
 
-  const chat = PastChat.map((chat) => `${chat.sender}: ${chat.content}`).join(
-    "\n",
-  );
+  const chat = PastChat.map((msg) => {
+  const sourceBlock =
+    msg.sources.length > 0
+      ? `\n  Sources used:\n${msg.sources.map((s, i) => `    [${i + 1}] ${s.title} — ${s.link}`).join("\n")}`
+      : "";
+  return `${msg.sender}:\n  ${msg.content}${sourceBlock}`;
+}).join("\n\n");
+
+const followupPrompt = `
+You are continuing an ongoing research conversation. Use the conversation history below as full context.
+
+Conversation so far:
+${chat}
+
+New user question: ${query}
+
+Instructions:
+- Answer the follow-up using both the conversation context and your own knowledge.
+- If the previous sources are still relevant, reference them. If not, answer from knowledge.
+- Keep the same <Answer> / <FollowUp> format.
+`;
+
   const Airesponse = streamText({
     model: googleAI("gemini-2.5-flash"),
     system: systemPrompt,
-    prompt: `
-Conversation history:
-${chat}
-
-User followup:
-${query}
-`,
+    prompt:followupPrompt
   });
 
   let finalText = "";

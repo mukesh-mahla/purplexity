@@ -49,6 +49,7 @@ model Sources {
   messageId String   
   link       String
   title     String
+  content   String
   message   Message @relation(fields: [messageId], references: [id])
 }
 

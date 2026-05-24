@@ -1,11 +1,10 @@
 import { handleStreamData, parseFOllowUpStreamObject, parseStreamObject } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { data, useParams } from "react-router-dom";
 import { SparklesIcon, } from "lucide-react";
 import { MessageBubble } from "@/ui/component/message";
 import { Source } from "@/ui/component/source";
 import { InputBox } from "@/ui/component/inputBox";
-import { Button } from "@/components/ui/button";
 import axios from "axios";
 
 export type Message = {
@@ -21,7 +20,8 @@ export default function Conversation() {
     const { conversationId } = useParams();
     const [messages, setMessages] = useState<Message[]>([])
     const [resource, setResource] = useState<SourceType[]>([]);
-
+    const InputRef = useRef<HTMLInputElement>(null);
+    const DivRef = useRef<HTMLDivElement>(null);
     const [isStreaming, setIsStreaming] = useState(false);
 
     useEffect(() => {
@@ -41,28 +41,34 @@ export default function Conversation() {
                 );
             }
 
-            if(lastMessageByAssistant){
+            if (lastMessageByAssistant) {
                 const formattedMessages = data.messages.map((msg: any) => ({
-                role: msg.sender,
-                content: msg.content,
-                followUp: msg.followUp
-            }))
-const firstAimessage = data.messages[1]
-            const LastMessageSources = firstAimessage.sources?.map((source: any) => ({
-                title: source.title,
-                link: source.link
-            })) || []
+                    role: msg.sender,
+                    content: msg.content,
+                    followUp: msg.followUp
+                }))
+                const firstAimessage = data.messages[1]
+                const LastMessageSources = firstAimessage.sources?.map((source: any) => ({
+                    title: source.title,
+                    link: source.link
+                })) || []
 
-            
 
-            setMessages((prev)=>[...prev, ...formattedMessages])
-            setResource((prev)=>[...prev, ...LastMessageSources])
-            
+
+                setMessages((prev) => [...prev, ...formattedMessages])
+                setResource((prev) => [...prev, ...LastMessageSources])
+
             }
-            
+
         }
         getData()
     }, [conversationId]);
+
+    useEffect(() => {
+        if (isStreaming) {
+            DivRef.current?.scrollIntoView({ behavior: "smooth" })
+        }
+    }, [messages])
 
     const HandleFolloup = async (question: string) => {
         setMessages((prev) => [...prev, { role: "USER", content: question }])
@@ -90,12 +96,12 @@ const firstAimessage = data.messages[1]
 
 
     return (
-        <div className="relative min-h-screen overflow-x-hidden bg-black text-white antialiased">
+        <div className="relative flex flex-col bg-black text-white antialiased">
             {/* Decorative Background Gradients */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#1e293b,transparent_35%),radial-gradient(circle_at_bottom_right,#312e81,transparent_30%)] pointer-events-none" />
-            <div className="absolute top-[-120px] left-[-120px] h-[300px] w-[300px] rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
-            <div className="absolute bottom-[-120px] right-[-120px] h-[300px] w-[300px] rounded-full bg-violet-500/10 blur-3xl pointer-events-none" />
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+            <div className="fixed inset-0 bg-[radial-gradient(circle_at_top,#1e293b,transparent_35%),radial-gradient(circle_at_bottom_right,#312e81,transparent_30%)] pointer-events-none" />
+            <div className="fixed top-[-120px] left-[-120px] h-[300px] w-[300px] rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
+            <div className="fixed bottom-[-120px] right-[-120px] h-[300px] w-[300px] rounded-full bg-violet-500/10 blur-3xl pointer-events-none" />
+            <div className="fixed inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
             {/* Header */}
             <header className="sticky top-0 z-30 border-b border-white/5 backdrop-blur-xl bg-black/40">
@@ -113,10 +119,10 @@ const firstAimessage = data.messages[1]
             </header>
 
             {/* Layout Wrapper */}
-            <main className="relative z-10 mx-auto flex max-w-6xl gap-8 px-6 pt-8 pb-36 lg:pb-12">
+            <main className="relative z-10 mx-auto flex w-full max-w-6xl gap-8 px-6 pt-8 pb-6">
 
                 {/* Chat Content Stream */}
-                <div className="flex-1 min-w-0 flex flex-col justify-between min-h-[calc(100vh-12rem)]">
+                <div className="flex-1 min-w-0 flex flex-col gap-6">
                     <section className="space-y-6 w-full">
                         {messages.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-64 text-center space-y-2">
@@ -133,20 +139,21 @@ const firstAimessage = data.messages[1]
                             ))
                         )}
                     </section>
+                    <div ref={DivRef} />
 
-                    {/* Persistent Desktop Input Area */}
-                    <div className="hidden lg:block sticky bottom-6 mt-8 w-full bg-zinc-950/80 border border-white/10 rounded-2xl p-4 backdrop-blur-lg shadow-2xl">
-                        <InputBox />
-                        <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/5">
-                            <span className="text-xs text-zinc-500 font-mono">Press Enter to Search</span>
-                            <Button size="sm" className="rounded-full bg-blue-600 hover:bg-blue-500 text-white font-medium px-4">
-                                Submit
-                            </Button>
-                        </div>
+                    {/* Desktop Input */}
+                    <div className="hidden lg:block w-full">
+                        <InputBox ref={InputRef} onSubmit={() => {
+                            HandleFolloup(InputRef.current?.value || "");
+                            if (InputRef.current) {
+                                InputRef.current.value = "";
+                            }
+                        }} />
+                        <p className="mt-2 text-center text-xs text-zinc-600 font-mono">Press Enter to search</p>
                     </div>
                 </div>
 
-                {/* Sidebar Sources (Only Hidden on Mobile) */}
+                {/* Sidebar */}
                 <aside className="sticky top-24 hidden h-[calc(100vh-8rem)] w-[320px] shrink-0 overflow-y-auto pr-2 lg:block border-l border-white/5 pl-6">
                     <div className="space-y-4">
                         <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
@@ -157,14 +164,9 @@ const firstAimessage = data.messages[1]
                 </aside>
             </main>
 
-            {/* Floating Mobile Footer Input Overlay */}
-            <footer className="lg:hidden fixed bottom-0 left-0 right-0 z-40 rounded-t-2xl border-t border-white/10 bg-zinc-950/90 p-4 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] backdrop-blur-xl">
-                <div className="flex flex-col gap-3">
-                    <InputBox />
-                    <Button className="w-full rounded-xl bg-white text-black hover:bg-zinc-200 font-semibold py-2">
-                        Send Query
-                    </Button>
-                </div>
+            {/* Mobile Footer */}
+            <footer className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-zinc-950/95 p-4 backdrop-blur-xl">
+                <InputBox />
             </footer>
         </div>
     );
