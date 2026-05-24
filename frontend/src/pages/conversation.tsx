@@ -6,6 +6,7 @@ import { MessageBubble } from "@/ui/component/message";
 import { Source } from "@/ui/component/source";
 import { InputBox } from "@/ui/component/inputBox";
 import axios from "axios";
+import { AllChat } from "@/ui/component/allChat";
 
 export type Message = {
     role?: string | undefined;
@@ -25,6 +26,9 @@ export default function Conversation() {
     const [isStreaming, setIsStreaming] = useState(false);
 
     useEffect(() => {
+        setMessages([]);
+        setResource([]);
+        setIsStreaming(false);
 
         async function getData() {
             const response = await axios.get(`http://localhost:4000/api/conversation/${conversationId}`)
@@ -55,18 +59,19 @@ export default function Conversation() {
 
 
 
-                setMessages((prev) => [...prev, ...formattedMessages])
-                setResource((prev) => [...prev, ...LastMessageSources])
+                setMessages(formattedMessages);
+                setResource(LastMessageSources);
 
             }
 
         }
         getData()
+
     }, [conversationId]);
 
     useEffect(() => {
         if (isStreaming) {
-            DivRef.current?.scrollIntoView({ behavior: "smooth" })
+            DivRef.current?.scrollIntoView({ behavior: "auto" })
         }
     }, [messages])
 
@@ -119,10 +124,16 @@ export default function Conversation() {
             </header>
 
             {/* Layout Wrapper */}
-            <main className="relative z-10 mx-auto flex w-full max-w-6xl gap-8 px-6 pt-8 pb-6">
+            {/* Layout Wrapper */}
+            <main className="relative z-10 flex w-full gap-6 px-4 pt-8 pb-6">
+
+                {/* Left Sidebar - All Conversations */}
+                <aside className="sticky top-24 hidden h-[calc(100vh-8rem)] w-[240px] shrink-0 lg:block">
+                    <AllChat />
+                </aside>
 
                 {/* Chat Content Stream */}
-                <div className="flex-1 min-w-0 flex flex-col gap-6">
+                <div className="flex-1 min-w-0 flex flex-col gap-6 max-w-3xl mx-auto">
                     <section className="space-y-6 w-full">
                         {messages.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-64 text-center space-y-2">
@@ -145,18 +156,16 @@ export default function Conversation() {
                     <div className="hidden lg:block w-full">
                         <InputBox ref={InputRef} onSubmit={() => {
                             HandleFolloup(InputRef.current?.value || "");
-                            if (InputRef.current) {
-                                InputRef.current.value = "";
-                            }
+                            if (InputRef.current) InputRef.current.value = "";
                         }} />
                         <p className="mt-2 text-center text-xs text-zinc-600 font-mono">Press Enter to search</p>
                     </div>
                 </div>
 
-                {/* Sidebar */}
-                <aside className="sticky top-24 hidden h-[calc(100vh-8rem)] w-[320px] shrink-0 overflow-y-auto pr-2 lg:block border-l border-white/5 pl-6">
+                {/* Right Sidebar - Sources */}
+                <aside className="sticky top-24 hidden h-[calc(100vh-8rem)] w-[280px] shrink-0 overflow-y-auto lg:block border-l border-white/5 pl-6">
                     <div className="space-y-4">
-                        <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
                             Sources Found ({resource.length})
                         </h3>
                         <Source resource={resource} />

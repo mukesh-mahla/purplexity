@@ -95,8 +95,6 @@ router.post("/api/:conversationId", async (req, res) => {
   );
   
   
-
-
   const AssistantMessage = await prisma.message.create({
     data: {
       conversationId: conversationId,
@@ -221,3 +219,14 @@ router.get("/api/conversation/:id",async(req,res)=>{
   }
  res.json(conversation)
 });
+
+router.get("/api/conversations",async(req,res)=>{
+
+  const coversations  = await prisma.conversation.findMany({
+    orderBy:{
+      updatedAt:"desc"
+    }
+  })
+
+  res.json(coversations)
+})
