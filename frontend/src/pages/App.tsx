@@ -4,14 +4,14 @@ import { ClerkProvider, SignIn, SignUp } from '@clerk/react'
 import Conversation from "./conversation.tsx";
 import Auth from './Landing';
 
-const PUBLISHABLE_KEY = "REMOVED"
+const PUBLISHABLE_KEY = 
 export function RootLayout() {
     const navigate = useNavigate()
 
     return (
         <ClerkProvider publishableKey={PUBLISHABLE_KEY!}  
          routerPush={(to) => navigate(to)}
-   routerReplace={(to) => navigate(to, { replace: true })}
+         routerReplace={(to) => navigate(to, { replace: true })}
          signInUrl="/sign-in"
          signUpUrl="/sign-up"
         >
