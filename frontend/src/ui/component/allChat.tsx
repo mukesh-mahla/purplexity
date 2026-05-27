@@ -1,4 +1,5 @@
 
+import { useAuth } from "@clerk/react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import {
@@ -11,12 +12,18 @@ import { useLocation, useNavigate } from "react-router-dom";
 export const AllChat = () => {
     const navigate = useNavigate();
     const location = useLocation();
-
+    const {getToken} = useAuth()
+    
     const { data, isLoading, error } = useQuery({
         queryKey: ["all-chat"],
         queryFn: async () => {
+            const token = await getToken();
             const response = await axios.get(
-                "http://localhost:4000/api/conversations"
+                "http://localhost:4000/api/conversations",{
+                    headers:{
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
             );
 
             return response.data;

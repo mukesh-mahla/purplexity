@@ -1,4 +1,5 @@
 import type { Message, SourceType } from "@/pages/conversation";
+import { useAuth } from "@clerk/react";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -8,12 +9,15 @@ export function cn(...inputs: ClassValue[]) {
 
 export const parseStreamObject = async (
   conversationId: string,
+  token:string,
   onData: (data: any) => void,
 ) => {
+  
   const response = await fetch(`http://localhost:4000/api/${conversationId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   });
 
@@ -57,14 +61,17 @@ export const parseStreamObject = async (
 export const parseFOllowUpStreamObject = async (
   conversationId: string,
   question: string,
+  token:string,
   onData: (data: any) => void,
 ) => {
+  
   const response = await fetch(
     `http://localhost:4000/api/conversation/followup`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ query: question, conversationId }),
     },

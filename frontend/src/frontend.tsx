@@ -5,7 +5,7 @@
  * It is included in `src/index.html`.
 //  */
 // Bun.env.PUBLIC_CLERK_PUBLISHABLE_KEY
-import { StrictMode } from "react";
+
 import { createRoot } from "react-dom/client";
 
 import {Toaster} from "@/components/ui/sonner"

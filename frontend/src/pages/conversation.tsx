@@ -7,6 +7,7 @@ import { Source } from "@/ui/component/source";
 import { InputBox } from "@/ui/component/inputBox";
 import axios from "axios";
 import { AllChat } from "@/ui/component/allChat";
+import { useAuth } from "@clerk/react";
 
 export type Message = {
     role?: string | undefined;
@@ -24,14 +25,19 @@ export default function Conversation() {
     const InputRef = useRef<HTMLInputElement>(null);
     const DivRef = useRef<HTMLDivElement>(null);
     const [isStreaming, setIsStreaming] = useState(false);
-
+    const {getToken} = useAuth()
     useEffect(() => {
         setMessages([]);
         setResource([]);
         setIsStreaming(false);
 
         async function getData() {
-            const response = await axios.get(`http://localhost:4000/api/conversation/${conversationId}`)
+            const token = await getToken();
+            const response = await axios.get(`http://localhost:4000/api/conversation/${conversationId}`,{
+                headers:{
+                    Authorization: `Bearer ${token}`,
+                }
+            })
             const data = response.data
 
             const lastMessage = data.messages?.[data.messages.length - 1]!
@@ -41,6 +47,7 @@ export default function Conversation() {
                 setIsStreaming(true);
                 await parseStreamObject(
                     conversationId!,
+                    token!,
                     (data) => handleStreamData(data, setMessages, setResource, setIsStreaming)
                 );
             }
@@ -76,9 +83,10 @@ export default function Conversation() {
     }, [messages])
 
     const HandleFolloup = async (question: string) => {
+         const token = await getToken();
         setMessages((prev) => [...prev, { role: "USER", content: question }])
         setIsStreaming(true);
-        await parseFOllowUpStreamObject(conversationId!, question, (data) => {
+        await parseFOllowUpStreamObject(conversationId!, question, token!, (data) => {
             if (data.role === "ASSISTANT") {
                 setMessages((prev) => {
                     if (prev.length > 0 && prev[prev.length - 1]!.role === "ASSISTANT") {
