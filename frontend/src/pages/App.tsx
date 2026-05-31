@@ -1,10 +1,14 @@
+
 import "../index.css"
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import { ClerkProvider, SignIn, SignUp } from '@clerk/react'
 import Conversation from "./conversation.tsx";
 import Auth from './Landing';
 
-const PUBLISHABLE_KEY = 
+import { CLERK_PUBLISHABLE_KEY } from "../env.ts";
+
+const PUBLISHABLE_KEY = CLERK_PUBLISHABLE_KEY;
+
 export function RootLayout() {
     const navigate = useNavigate()
 

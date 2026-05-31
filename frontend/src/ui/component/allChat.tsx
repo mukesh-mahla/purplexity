@@ -19,7 +19,7 @@ export const AllChat = () => {
         queryFn: async () => {
             const token = await getToken();
             const response = await axios.get(
-                "http://localhost:4000/api/conversations",{
+                `${process.env.BACKEND_URL}/api/conversations`,{
                     headers:{
                         Authorization: `Bearer ${token}`,
                     }
