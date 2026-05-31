@@ -7,7 +7,7 @@ import Auth from './Landing';
 
 
 
-const PUBLISHABLE_KEY = process.env.PUBLIC_CLERK_PUBLISHABLE_KEY;
+const PUBLISHABLE_KEY = import.meta.env.VITE_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 export function RootLayout() {
     const navigate = useNavigate()

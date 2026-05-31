@@ -1,51 +1,14 @@
-@import "../styles/globals.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@layer base {
-  :root {
-    @apply font-sans;
+/* You can keep the custom scrollbar hiding class here since we use it in the UI */
+@layer utilities {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
   }
-
-  body {
-     @apply min-w-[320px] min-h-screen relative m-0 bg-background text-foreground;
-  }
-}
-
-/* cool Bun background animation 😎 */
-/* body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  opacity: 0.05;
-  background: url("./logo.svg");
-  background-size: 256px;
-  transform: rotate(-12deg) scale(1.35);
-  animation: slide 30s linear infinite;
-  pointer-events: none;
-} */
-
-@keyframes slide {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: 256px 224px;
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion) {
-  *,
-  ::before,
-  ::after {
-    animation: none !important;
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

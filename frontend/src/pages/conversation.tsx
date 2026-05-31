@@ -1,6 +1,6 @@
 import { handleStreamData, parseFOllowUpStreamObject, parseStreamObject } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
-import { data, useParams, useNavigate } from "react-router-dom";
+import {  useParams, useNavigate } from "react-router-dom";
 import { SparklesIcon, ChevronLeft,Layers, Zap } from "lucide-react";
 import { MessageBubble } from "@/ui/component/message";
 import { Source } from "@/ui/component/source";
@@ -9,7 +9,7 @@ import axios from "axios";
 import { AllChat } from "@/ui/component/allChat";
 import { useAuth } from "@clerk/react";
 
-const BACKEND_URL = process.env.PUBLIC_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_PUBLIC_BACKEND_URL;
 
 export type Message = {
     role?: string | undefined;

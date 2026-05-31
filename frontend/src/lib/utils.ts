@@ -13,7 +13,7 @@ export const parseStreamObject = async (
   onData: (data: any) => void,
 ) => {
   
-  const response = await fetch(`${process.env.PUBLIC_BACKEND_URL}/api/${conversationId}`, {
+  const response = await fetch(`${import.meta.env.VITE_PUBLIC_BACKEND_URL}/api/${conversationId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -66,7 +66,7 @@ export const parseFOllowUpStreamObject = async (
 ) => {
   
   const response = await fetch(
-    `${process.env.PUBLIC_BACKEND_URL}/api/conversation/followup`,
+    `${import.meta.env.VITE_PUBLIC_BACKEND_URL}/api/conversation/followup`,
     {
       method: "POST",
       headers: {
