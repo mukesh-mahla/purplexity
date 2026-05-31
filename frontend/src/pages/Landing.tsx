@@ -38,7 +38,7 @@ export default function Landing() {
     if (!isSignedIn) return;
     const syncUser = async () => {
       const token = await getToken();
-      await axios.post(`${process.env.BACKEND_URL}/create-user`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.post(`${process.env.PUBLIC_BACKEND_URL}/create-user`, {}, { headers: { Authorization: `Bearer ${token}` } });
     };
     syncUser();
   }, [isSignedIn, getToken]);
@@ -46,7 +46,7 @@ export default function Landing() {
   const mutation = useMutation({
     mutationFn: async (query: string) => {
       const token = await getToken();
-      return axios.post(`${process.env.BACKEND_URL}/api/create-conversation`, { query }, { headers: { Authorization: `Bearer ${token}` } });
+      return axios.post(`${process.env.PUBLIC_BACKEND_URL}/api/create-conversation`, { query }, { headers: { Authorization: `Bearer ${token}` } });
     },
   });
 

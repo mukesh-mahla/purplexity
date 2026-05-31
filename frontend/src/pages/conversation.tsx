@@ -9,7 +9,7 @@ import axios from "axios";
 import { AllChat } from "@/ui/component/allChat";
 import { useAuth } from "@clerk/react";
 
-const BACKEND_URL = process.env.BACKEND_URL;
+const BACKEND_URL = process.env.PUBLIC_BACKEND_URL;
 
 export type Message = {
     role?: string | undefined;
