@@ -5,9 +5,9 @@ import { ClerkProvider, SignIn, SignUp } from '@clerk/react'
 import Conversation from "./conversation.tsx";
 import Auth from './Landing';
 
-import { CLERK_PUBLISHABLE_KEY } from "../env.ts";
 
-const PUBLISHABLE_KEY = CLERK_PUBLISHABLE_KEY;
+
+const PUBLISHABLE_KEY = process.env.CLERK_PUBLISHABLE_KEY;
 
 export function RootLayout() {
     const navigate = useNavigate()
