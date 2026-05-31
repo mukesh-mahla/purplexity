@@ -6,7 +6,7 @@
   "scripts": {
     "dev":"bun ./index.ts",
     "build":" bunx prisma generate",
-    "start":"bun build && bun ./index.ts"
+    "start":" bun ./index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
